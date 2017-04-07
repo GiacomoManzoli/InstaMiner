@@ -65,15 +65,17 @@ class InstaMiner:
 
     def set_post_discovery(self, value):
         self.post_discovery = value
+        self.logFile.write('Post discovery: '+str(value)+'\n')
         return self
 
     def set_hashtag_discovery(self, value):
         self.hashtag_discovery = value
+        self.logFile.write('Hashtag discovery: ' + str(value) + '\n')
         return self
 
     def run(self):
-        self._run_pages(self.post_discovery)
-        self._run_posts(self.hashtag_discovery)
+        self._run_pages()
+        self._run_posts()
         self._run_hashtags()
         return self
 
@@ -94,18 +96,20 @@ class InstaMiner:
         self.logFile.close()
 
     def _run_hashtags(self):
+        self.logFile.write('Checking hashtag... (total: ' + str(len(self.hashtags)) + ')\n')
         print ''
         print "Checking hashtags..."
         for i, hashtag in enumerate(self.hashtags):
             print ''
             print '['+str(i+1)+'/'+ str(len(self.hashtags))+']'
             count = get_hashtag_count(self.browser, hashtag)
-            self.hashtags_logs.write(hashtag+';'+str(count)+';'+current_timestamp()+'\n')
+            self.hashtags_logs.write(unicode(hashtag)+';'+str(count)+';'+current_timestamp()+'\n')
         return self
 
-    def _run_pages(self, check_last_post = True):
+    def _run_pages(self):
         """check_last_post = True --> check if the page last post is being montiored, and if it isn't, adds it
         to posts list. """
+        self.logFile.write('Checking pages... (total: ' + str(len(self.pages)) + ')\n')
         print ''
         print "Checking Pages..."
         for i, page in enumerate(self.pages):
@@ -119,7 +123,7 @@ class InstaMiner:
                                   + str(res['followers']) + ';'
                                   + str(res['follows'])+'\n')
 
-            if check_last_post:
+            if self.post_discovery:
                 last_post_code = get_last_post(self.browser, page)
                 if last_post_code != '' and last_post_code not in self.posts:
                     print "Found a new post: ", last_post_code
@@ -130,7 +134,8 @@ class InstaMiner:
 
         return self
 
-    def _run_posts(self, hashtag_discovery):
+    def _run_posts(self):
+        self.logFile.write('Checking posts... (total: ' + str(len(self.posts)) + ')\n')
         print ''
         print "Checking Posts..."
         for i, post in enumerate(self.posts):
@@ -143,7 +148,7 @@ class InstaMiner:
                                   + str(res['likes_count']) + ';'
                                   + str(res['date']) + '\n')
 
-            if hashtag_discovery:
+            if self.hashtag_discovery:
                 post_hashtags = extract_post_hashtags(res['caption'])
                 for ph in post_hashtags:
                     hashtag_file = codecs.open(self.config_dir + '/hashtags', 'a', 'utf-8')
@@ -158,19 +163,19 @@ class InstaMiner:
         # type: (str) -> None
 
         # HASHTAG
-        self.hashtags = [line.rstrip('\n') for line in open(config_dir+'/hashtags','r')]
+        self.hashtags = [line.rstrip('\n') for line in codecs.open(config_dir+'/hashtags', 'r', 'utf-8')]
         print 'Hashtags:'
         for h in self.hashtags:
             print '\t', h
 
         # PAGES
-        self.pages = [line.rstrip('\n') for line in open(config_dir + '/pages', 'r')]
+        self.pages = [line.rstrip('\n') for line in codecs.open(config_dir + '/pages', 'r', 'utf-8')]
         print 'Pages:'
         for p in self.pages:
             print '\t', p
 
         # POSTS
-        self.posts = [line.rstrip('\n') for line in open(config_dir + '/posts', 'r')]
+        self.posts = [line.rstrip('\n') for line in codecs.open(config_dir + '/posts', 'r', 'utf-8')]
         print 'Posts:'
         for p in self.posts:
             print '\t', p

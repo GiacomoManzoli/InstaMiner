@@ -3,8 +3,9 @@ from selenium import webdriver
 
 from .time_util import current_timestamp
 
+
 def get_hashtag_count(browser, hashtag):
-    # type: (webdriver.Chrome, str) -> int
+    # type: (webdriver.Chrome, unicode) -> int
 
     url = 'https://www.instagram.com/explore/tags/' \
                 + (hashtag[1:] if hashtag[:1] == '#' else hashtag)
