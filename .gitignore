@@ -1,0 +1,4 @@
+.idea
+instapy
+logs/*
+!logs/.keep
